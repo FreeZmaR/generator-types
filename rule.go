@@ -10,7 +10,7 @@ type typeWithoutValue interface {
 }
 
 type Rule[T Types] interface {
-	Check(val T) error
+	Check(val Type[T]) error
 }
 
 type RequiredRule struct{}

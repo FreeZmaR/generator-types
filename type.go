@@ -24,7 +24,7 @@ func (t Type[T]) Tag() string {
 
 func (t Type[T]) Validate(rules ...Rule[T]) error {
 	for i := range rules {
-		if err := rules[i].Check(t.value); err != nil {
+		if err := rules[i].Check(t); err != nil {
 			return err
 		}
 	}
