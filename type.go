@@ -10,8 +10,8 @@ type Type[T Types] struct {
 	tag        string
 }
 
-func NewType[T Types](isProvided bool, value T, tag string) *Type[T] {
-	return &Type[T]{
+func NewType[T Types](isProvided bool, value T, tag string) Type[T] {
+	return Type[T]{
 		isProvided: isProvided,
 		value:      value,
 		tag:        tag,
@@ -32,7 +32,7 @@ func (t Type[T]) Tag() string {
 
 func (t Type[T]) Validate(rules ...Rule[T]) error {
 	for i := range rules {
-		if err := rules[i].Check(t); err != nil {
+		if err := rules[i](t); err != nil {
 			return err
 		}
 	}
