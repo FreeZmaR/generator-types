@@ -4,10 +4,10 @@ import (
 	"fmt"
 )
 
-type Rule[T Types] func(t Type[T]) error
+type Rule[T any] func(t *Type[T]) error
 
-func RequiredRule[T Types]() func(t Type[T]) error {
-	return func(t Type[T]) error {
+func RequiredRule[T any]() Rule[T] {
+	return func(t *Type[T]) error {
 		if !t.IsProvided() {
 			return fmt.Errorf("%s: not provided", t.Tag())
 		}
@@ -16,8 +16,8 @@ func RequiredRule[T Types]() func(t Type[T]) error {
 	}
 }
 
-func EqualRule[T Types](vals ...T) Rule[T] {
-	return func(t Type[T]) error {
+func EqualRule[T comparable](vals ...T) Rule[T] {
+	return func(t *Type[T]) error {
 		if !t.IsProvided() {
 			return nil
 		}
@@ -32,8 +32,8 @@ func EqualRule[T Types](vals ...T) Rule[T] {
 	}
 }
 
-func NotEqualRule[T Types](vals ...T) Rule[T] {
-	return func(t Type[T]) error {
+func NotEqualRule[T comparable](vals ...T) Rule[T] {
+	return func(t *Type[T]) error {
 		if !t.IsProvided() {
 			return nil
 		}
@@ -49,7 +49,7 @@ func NotEqualRule[T Types](vals ...T) Rule[T] {
 }
 
 func GTERule[T int | float64](val T) Rule[T] {
-	return func(t Type[T]) error {
+	return func(t *Type[T]) error {
 		if !t.IsProvided() || t.Value() >= val {
 			return nil
 		}
@@ -59,7 +59,7 @@ func GTERule[T int | float64](val T) Rule[T] {
 }
 
 func GTRule[T int | float64](val T) Rule[T] {
-	return func(t Type[T]) error {
+	return func(t *Type[T]) error {
 		if !t.IsProvided() || t.Value() > val {
 			return nil
 		}
@@ -69,7 +69,7 @@ func GTRule[T int | float64](val T) Rule[T] {
 }
 
 func LTERule[T int | float64](val T) Rule[T] {
-	return func(t Type[T]) error {
+	return func(t *Type[T]) error {
 		if !t.IsProvided() || t.Value() <= val {
 			return nil
 		}
@@ -79,7 +79,7 @@ func LTERule[T int | float64](val T) Rule[T] {
 }
 
 func LTRule[T int | float64](val T) Rule[T] {
-	return func(t Type[T]) error {
+	return func(t *Type[T]) error {
 		if !t.IsProvided() || t.Value() < val {
 			return nil
 		}

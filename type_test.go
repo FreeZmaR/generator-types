@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-type typeValidationTestCase[T Types] struct {
+type typeValidationTestCase[T any] struct {
 	t     Type[T]
 	rules []Rule[T]
 	error assert.ErrorAssertionFunc
@@ -14,12 +14,12 @@ type typeValidationTestCase[T Types] struct {
 func TestTypeValidationInt(t *testing.T) {
 	tt := map[string]typeValidationTestCase[int]{
 		"Without tules": {
-			t:     NewType(true, 1, "test"),
+			t:     NewType(true, 1, "test", B2I),
 			rules: []Rule[int]{},
 			error: assert.NoError,
 		},
 		"Success all rules": {
-			t: NewType(true, 1, "test"),
+			t: NewType(true, 1, "test", B2I),
 			rules: []Rule[int]{
 				RequiredRule[int](),
 				EqualRule(1),
@@ -32,7 +32,7 @@ func TestTypeValidationInt(t *testing.T) {
 			error: assert.NoError,
 		},
 		"Failed first rule": {
-			t: NewType(false, 1, "test"),
+			t: NewType(false, 1, "test", B2I),
 			rules: []Rule[int]{
 				RequiredRule[int](),
 				EqualRule(1),
@@ -45,7 +45,7 @@ func TestTypeValidationInt(t *testing.T) {
 			error: assert.Error,
 		},
 		"Failed middle rule": {
-			t: NewType(true, 1, "test"),
+			t: NewType(true, 1, "test", B2I),
 			rules: []Rule[int]{
 				RequiredRule[int](),
 				EqualRule(1),
@@ -58,7 +58,7 @@ func TestTypeValidationInt(t *testing.T) {
 			error: assert.Error,
 		},
 		"Failed last rule": {
-			t: NewType(true, 1, "test"),
+			t: NewType(true, 1, "test", B2I),
 			rules: []Rule[int]{
 				RequiredRule[int](),
 				EqualRule(1),
@@ -83,12 +83,12 @@ func TestTypeValidationInt(t *testing.T) {
 func TestTypeValidationFloat64(t *testing.T) {
 	tt := map[string]typeValidationTestCase[float64]{
 		"Without rules": {
-			t:     NewType(true, 1.0, "test"),
+			t:     NewType(true, 1.0, "test", B2Float64),
 			rules: []Rule[float64]{},
 			error: assert.NoError,
 		},
 		"Success all rules": {
-			t: NewType(true, 1.0, "test"),
+			t: NewType(true, 1.0, "test", B2Float64),
 			rules: []Rule[float64]{
 				RequiredRule[float64](),
 				EqualRule(1.0),
@@ -101,7 +101,7 @@ func TestTypeValidationFloat64(t *testing.T) {
 			error: assert.NoError,
 		},
 		"Failed middle rule": {
-			t: NewType(true, 1.1, "test"),
+			t: NewType(true, 1.1, "test", B2Float64),
 			rules: []Rule[float64]{
 				RequiredRule[float64](),
 				EqualRule(1.1),
@@ -114,7 +114,7 @@ func TestTypeValidationFloat64(t *testing.T) {
 			error: assert.Error,
 		},
 		"Failed last rule": {
-			t: NewType(true, 1.0, "test"),
+			t: NewType(true, 1.0, "test", B2Float64),
 			rules: []Rule[float64]{
 				RequiredRule[float64](),
 				EqualRule(1.0),
@@ -139,12 +139,12 @@ func TestTypeValidationFloat64(t *testing.T) {
 func TestTypeValidationString(t *testing.T) {
 	tt := map[string]typeValidationTestCase[string]{
 		"Without rules": {
-			t:     NewType(true, "test", "test"),
+			t:     NewType(true, "test", "test", B2S),
 			rules: []Rule[string]{},
 			error: assert.NoError,
 		},
 		"Success all rules": {
-			t: NewType(true, "test", "test"),
+			t: NewType(true, "test", "test", B2S),
 			rules: []Rule[string]{
 				RequiredRule[string](),
 				EqualRule("test"),
@@ -165,12 +165,12 @@ func TestTypeValidationString(t *testing.T) {
 func TestTypeValidationBool(t *testing.T) {
 	tt := map[string]typeValidationTestCase[bool]{
 		"Without rules": {
-			t:     NewType(true, true, "test"),
+			t:     NewType(true, true, "test", B2Bool),
 			rules: []Rule[bool]{},
 			error: assert.NoError,
 		},
 		"Success all rules": {
-			t: NewType(true, true, "test"),
+			t: NewType(true, true, "test", B2Bool),
 			rules: []Rule[bool]{
 				RequiredRule[bool](),
 				EqualRule(true),
