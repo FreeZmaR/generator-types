@@ -1,8 +1,6 @@
 module github.com/FreeZmaR/generator-types
 
-go 1.24.2
-
-toolchain go1.24.3
+go 1.24
 
 require (
 	github.com/goccy/go-json v0.10.5
