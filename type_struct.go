@@ -11,10 +11,9 @@ type Struct[T any] struct {
 
 type PrepareFN[T any] func() T
 
-func NewStruct[T any](isProvided bool, val T, tag string, prepareFN PrepareFN[T]) Struct[T] {
+func NewStruct[T any](isProvided bool, tag string, prepareFN PrepareFN[T]) Struct[T] {
 	return Struct[T]{
 		isProvided: isProvided,
-		value:      val,
 		tag:        tag,
 		prepareFN:  prepareFN,
 	}
@@ -45,5 +44,11 @@ func (s *Struct[T]) UnmarshalJSON(b []byte) error {
 
 	dummy := s.prepareFN()
 
-	return json.Unmarshal(b, &dummy)
+	if err := json.Unmarshal(b, &dummy); err != nil {
+		return err
+	}
+
+	s.value = dummy
+
+	return nil
 }
