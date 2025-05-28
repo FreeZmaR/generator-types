@@ -37,16 +37,3 @@ jobs:
       # Runs the Go unit tests
       - name: Run unit tests
         run: go test -v ./...
-
-      # Optional: If you generate a coverage profile, you can upload it as an artifact
-      - name: Run tests with coverage
-        run: go test -v -coverprofile=coverage.out ./...
-
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }} # Store your Codecov token in GitHub secrets
-          files: ./coverage.out
-          flags: unittests
-          name: codecov-umbrella
-          fail_ci_if_error: true
