@@ -10,6 +10,7 @@ type Type[T any] struct {
 	value      T
 	tag        string
 	castFN     TypeCastFn[T]
+	rules      []TypeRule[T]
 }
 
 type TypeCastFn[T any] func(b []byte) (T, error)
@@ -21,6 +22,13 @@ func NewType[T any](isProvided bool, value T, tag string, castFN TypeCastFn[T]) 
 		tag:        tag,
 		castFN:     castFN,
 	}
+}
+
+func NewTypeWithRules[T any](isProvided bool, value T, tag string, castFN TypeCastFn[T], rules ...TypeRule[T]) Type[T] {
+	t := NewType(isProvided, value, tag, castFN)
+	t.rules = rules
+
+	return t
 }
 
 func (t *Type[T]) IsProvided() bool {
@@ -43,7 +51,11 @@ func (t *Type[T]) String() string {
 	return fmt.Sprintf("%s:%v", t.tag, t.value)
 }
 
-func (t *Type[T]) Validate(rules ...Rule[T]) error {
+func (t *Type[T]) Validate(rules ...TypeRule[T]) error {
+	if len(t.rules) != 0 {
+		rules = append(t.rules, rules...)
+	}
+
 	for i := range rules {
 		if err := rules[i](t); err != nil {
 			return err

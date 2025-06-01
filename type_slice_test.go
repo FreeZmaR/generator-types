@@ -68,10 +68,11 @@ func (s *TestSliceUnmarshalSuite) TestUnmarshalSliceStructWithPrepareFN() {
 	var (
 		prepareFN = func(u *Slice[User]) {
 			u.SetTag("test")
+			vals := u.Value()
 
-			for i := range u.value {
-				u.value[i].Name.SetTag("name")
-				u.value[i].Age.SetTag("age")
+			for i := range vals {
+				vals[i].Name.SetTag("name")
+				vals[i].Age.SetTag("age")
 			}
 		}
 

@@ -7,6 +7,7 @@ type Slice[T any] struct {
 	value      []T
 	tag        string
 	prepareFN  SlicePrepareFN[T]
+	rules      []SliceRule[T]
 }
 
 type SlicePrepareFN[T any] func(val *Slice[T])
@@ -18,6 +19,19 @@ func NewSlice[T any](isProvided bool, val []T, tag string, prepareFN SlicePrepar
 		tag:        tag,
 		prepareFN:  prepareFN,
 	}
+}
+
+func NewSliceWithRules[T any](
+	isProvided bool,
+	val []T,
+	tag string,
+	prepareFN SlicePrepareFN[T],
+	rules ...SliceRule[T],
+) Slice[T] {
+	s := NewSlice[T](isProvided, val, tag, prepareFN)
+	s.rules = rules
+
+	return s
 }
 
 func (s *Slice[T]) IsProvided() bool {
@@ -38,6 +52,20 @@ func (s *Slice[T]) SetTag(tag string) {
 
 func (s *Slice[T]) Len() int {
 	return len(s.value)
+}
+
+func (s *Slice[T]) Validate(rules ...SliceRule[T]) error {
+	if len(s.rules) != 0 {
+		rules = append(s.rules, rules...)
+	}
+
+	for i := range rules {
+		if err := rules[i](s); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (s *Slice[T]) UnmarshalJSON(b []byte) error {
