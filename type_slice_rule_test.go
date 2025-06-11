@@ -13,19 +13,19 @@ func TestRequiredSliceRule(t *testing.T) {
 
 	tt := map[string]testCase{
 		"Provided": {
-			slice:       NewSlice[int](true, []int{1}, "", nil),
+			slice:       NewSlice[int](WithSliceIsProvided[int](true), WithSliceValue([]int{1})),
 			expectError: assert.NoError,
 		},
 		"NotProvided": {
-			slice:       NewSlice[int](false, []int{1}, "", nil),
+			slice:       NewSlice[int](WithSliceValue([]int{1})),
 			expectError: assert.Error,
 		},
 		"Nil value": {
-			slice:       NewSlice[int](true, nil, "", nil),
+			slice:       NewSlice[int](WithSliceIsProvided[int](true)),
 			expectError: assert.Error,
 		},
 		"Zero value": {
-			slice:       NewSlice[int](true, []int{}, "", nil),
+			slice:       NewSlice[int](WithSliceIsProvided[int](true), WithSliceValue([]int{})),
 			expectError: assert.Error,
 		},
 	}
@@ -49,17 +49,17 @@ func TestSliceSizeRule(t *testing.T) {
 
 	tt := map[string]testCase{
 		"Values equal rule size": {
-			slice:       NewSlice[int](true, []int{1}, "", nil),
+			slice:       NewSlice[int](WithSliceIsProvided[int](true), WithSliceValue([]int{1})),
 			ruleSize:    1,
 			expectError: assert.NoError,
 		},
 		"Values not equal rule size": {
-			slice:       NewSlice[int](false, []int{1}, "", nil),
+			slice:       NewSlice[int](WithSliceIsProvided[int](true), WithSliceValue([]int{1})),
 			ruleSize:    2,
 			expectError: assert.Error,
 		},
 		"Nil value and rule size 1": {
-			slice:       NewSlice[int](true, nil, "", nil),
+			slice:       NewSlice[int](WithSliceIsProvided[int](true)),
 			ruleSize:    1,
 			expectError: assert.Error,
 		},
@@ -82,27 +82,27 @@ func TestSliceSizeGTE(t *testing.T) {
 
 	tt := map[string]testCase{
 		"Values equal rule size": {
-			slice:       NewSlice[int](true, []int{1}, "", nil),
+			slice:       NewSlice[int](WithSliceIsProvided[int](true), WithSliceValue([]int{1})),
 			ruleSize:    1,
 			expectError: assert.NoError,
 		},
 		"Values not equal rule size": {
-			slice:       NewSlice[int](false, []int{1}, "", nil),
+			slice:       NewSlice[int](WithSliceIsProvided[int](true), WithSliceValue([]int{1})),
 			ruleSize:    2,
 			expectError: assert.Error,
 		},
 		"Nil value and rule size 1": {
-			slice:       NewSlice[int](true, nil, "", nil),
+			slice:       NewSlice[int](WithSliceIsProvided[int](true)),
 			ruleSize:    1,
 			expectError: assert.Error,
 		},
 		"Nil value and rule size 0": {
-			slice:       NewSlice[int](true, nil, "", nil),
+			slice:       NewSlice[int](WithSliceIsProvided[int](true)),
 			ruleSize:    0,
 			expectError: assert.NoError,
 		},
 		"2 values and rule size 1": {
-			slice:       NewSlice[int](true, []int{1, 2}, "", nil),
+			slice:       NewSlice[int](WithSliceIsProvided[int](true), WithSliceValue([]int{1})),
 			ruleSize:    1,
 			expectError: assert.NoError,
 		},

@@ -12,24 +12,12 @@ type Slice[T any] struct {
 
 type SlicePrepareFN[T any] func(val *Slice[T])
 
-func NewSlice[T any](isProvided bool, val []T, tag string, prepareFN SlicePrepareFN[T]) Slice[T] {
-	return Slice[T]{
-		isProvided: isProvided,
-		value:      val,
-		tag:        tag,
-		prepareFN:  prepareFN,
-	}
-}
+func NewSlice[T any](options ...SliceOption[T]) Slice[T] {
+	var s Slice[T]
 
-func NewSliceWithRules[T any](
-	isProvided bool,
-	val []T,
-	tag string,
-	prepareFN SlicePrepareFN[T],
-	rules ...SliceRule[T],
-) Slice[T] {
-	s := NewSlice[T](isProvided, val, tag, prepareFN)
-	s.rules = rules
+	for i := range options {
+		options[i](&s)
+	}
 
 	return s
 }

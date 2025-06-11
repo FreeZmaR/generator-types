@@ -2,398 +2,335 @@ package types
 
 import (
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/suite"
 	"testing"
 )
 
-type TestRequiredRuleSuite struct {
-	suite.Suite
+// TEST Required
+
+func TestRequiredRule_Int(t *testing.T) {
+	tp := NewType(WithIsProvided[int](true))
+	err := RequiredRule[int]()(&tp)
+	assert.NoError(t, err)
+
+	tp = NewType(WithIsProvided[int](false), WithTag[int]("test"))
+	err = RequiredRule[int]()(&tp)
+	assert.ErrorContains(t, err, "test: not provided")
 }
 
-func (s *TestRequiredRuleSuite) TestInt() {
-	t := NewType(true, 1, "test", B2I)
-	err := RequiredRule[int]()(&t)
-	assert.NoError(s.T(), err)
+func TestRequiredRule_Float64(t *testing.T) {
+	tp := NewType(WithIsProvided[float64](true))
+	err := RequiredRule[float64]()(&tp)
+	assert.NoError(t, err)
 
-	t = NewType(false, 1, "test", B2I)
-	err = RequiredRule[int]()(&t)
-	assert.ErrorContains(s.T(), err, "test: not provided")
+	tp = NewType(WithIsProvided[float64](false), WithTag[float64]("test"))
+	err = RequiredRule[float64]()(&tp)
+	assert.ErrorContains(t, err, "test: not provided")
 }
 
-func (s *TestRequiredRuleSuite) TestFloat64() {
-	t := NewType(true, 1.0, "test", B2Float64)
-	err := RequiredRule[float64]()(&t)
-	assert.NoError(s.T(), err)
+func TestRequiredRule_String(t *testing.T) {
+	tp := NewType(WithIsProvided[string](true))
+	err := RequiredRule[string]()(&tp)
+	assert.NoError(t, err)
 
-	t = NewType(false, 1.0, "test", B2Float64)
-	err = RequiredRule[float64]()(&t)
-	assert.ErrorContains(s.T(), err, "test: not provided")
+	tp = NewType(WithIsProvided[string](false), WithTag[string]("test"))
+	err = RequiredRule[string]()(&tp)
+	assert.ErrorContains(t, err, "test: not provided")
 }
 
-func (s *TestRequiredRuleSuite) TestString() {
-	t := NewType(true, "some", "test", B2S)
-	err := RequiredRule[string]()(&t)
-	assert.NoError(s.T(), err)
+func TestRequiredRule_Bool(t *testing.T) {
+	tp := NewType(WithIsProvided[bool](true))
+	err := RequiredRule[bool]()(&tp)
+	assert.NoError(t, err)
 
-	t = NewType(false, "some", "test", B2S)
-	err = RequiredRule[string]()(&t)
-	assert.ErrorContains(s.T(), err, "test: not provided")
+	tp = NewType(WithIsProvided[bool](false), WithTag[bool]("test"))
+	err = RequiredRule[bool]()(&tp)
+	assert.ErrorContains(t, err, "test: not provided")
 }
 
-func (s *TestRequiredRuleSuite) TestBool() {
-	t := NewType(true, true, "test", B2Bool)
-	err := RequiredRule[bool]()(&t)
-	assert.NoError(s.T(), err)
+// TEST Equal
 
-	t = NewType(false, true, "test", B2Bool)
-	err = RequiredRule[bool]()(&t)
-	assert.ErrorContains(s.T(), err, "test: not provided")
+func TestEqualRule_Int(t *testing.T) {
+	tp := NewType(WithIsProvided[int](true), WithValue(1), WithTag[int]("test"))
+	err := EqualRule[int](1)(&tp)
+	assert.NoError(t, err)
+
+	err = EqualRule[int](1, 2, 3, 4, 5)(&tp)
+	assert.NoError(t, err)
+
+	err = EqualRule[int](0)(&tp)
+	assert.ErrorContains(t, err, "test: not equal [0]")
+
+	err = EqualRule[int](0, 2, 3, 4, 5)(&tp)
+	assert.ErrorContains(t, err, "test: not equal [0 2 3 4 5]")
 }
 
-func TestRequiredRule(t *testing.T) {
-	suite.Run(t, new(TestRequiredRuleSuite))
+func TestEqualRule_Float64(t *testing.T) {
+	tp := NewType(WithIsProvided[float64](true), WithValue(1.0), WithTag[float64]("test"))
+	err := EqualRule[float64](1.0)(&tp)
+	assert.NoError(t, err)
+
+	err = EqualRule[float64](0)(&tp)
+	assert.ErrorContains(t, err, "test: not equal [0]")
+
+	err = EqualRule[float64](0, 2.0, 3.0)(&tp)
+	assert.ErrorContains(t, err, "test: not equal [0 2 3]")
+
+	tp = NewType(WithValue(1.0))
+	err = EqualRule[float64](2)(&tp)
+	assert.NoError(t, err)
+
+	tp = NewType(WithIsProvided[float64](true), WithValue(1.1))
+	err = EqualRule[float64](1.1, 2.0, 3.0)(&tp)
+	assert.NoError(t, err)
 }
 
-type TestEqualRuleSuite struct {
-	suite.Suite
+func TestEqualRule_String(t *testing.T) {
+	tp := NewType(WithIsProvided[string](true), WithValue("some"), WithTag[string]("test"))
+	err := EqualRule[string]("some")(&tp)
+	assert.NoError(t, err)
+
+	err = EqualRule[string]("some", "other")(&tp)
+	assert.NoError(t, err)
+
+	err = EqualRule[string]("different")(&tp)
+	assert.ErrorContains(t, err, "test: not equal [different]")
+
+	err = EqualRule[string]("diff", "erent")(&tp)
+	assert.ErrorContains(t, err, "test: not equal [diff erent]")
+
+	tp = NewType(WithValue("some"))
+	err = EqualRule[string]("other")(&tp)
+	assert.NoError(t, err)
 }
 
-func (s *TestEqualRuleSuite) TestInt() {
-	t := NewType(true, 1, "test", B2I)
-	err := EqualRule[int](1)(&t)
-	assert.NoError(s.T(), err)
+func TestEqualRule_Bool(t *testing.T) {
+	tp := NewType(WithIsProvided[bool](true), WithValue(true), WithTag[bool]("test"))
+	err := EqualRule[bool](true)(&tp)
+	assert.NoError(t, err)
 
-	t = NewType(true, 1, "test", B2I)
-	err = EqualRule[int](1, 2, 3, 4, 5)(&t)
-	assert.NoError(s.T(), err)
+	err = EqualRule[bool](false)(&tp)
+	assert.ErrorContains(t, err, "test: not equal [false]")
 
-	t = NewType(true, 1, "test", B2I)
-	err = EqualRule[int](0)(&t)
-	assert.ErrorContains(s.T(), err, "test: not equal [0]")
+	tp = NewType(WithIsProvided[bool](true), WithValue(false), WithTag[bool]("test"))
+	err = EqualRule[bool](true)(&tp)
+	assert.ErrorContains(t, err, "test: not equal [true]")
 
-	t = NewType(true, 1, "test", B2I)
-	err = EqualRule[int](0, 2, 3, 4, 5)(&t)
-	assert.ErrorContains(s.T(), err, "test: not equal [0 2 3 4 5]")
+	tp = NewType(WithValue(false))
+	err = EqualRule[bool](false, true)(&tp)
+	assert.NoError(t, err)
+
+	err = EqualRule[bool](false)(&tp)
+	assert.NoError(t, err)
 }
 
-func (s *TestEqualRuleSuite) TestFloat64() {
-	t := NewType(true, 1.0, "test", B2Float64)
-	err := EqualRule[float64](1.0)(&t)
-	assert.NoError(s.T(), err)
+// TEST NotEqual
 
-	t = NewType(true, 1.1, "test", B2Float64)
-	err = EqualRule[float64](1.1, 2.0, 3.0)(&t)
-	assert.NoError(s.T(), err)
+func TestNotEqualRule_Int(t *testing.T) {
+	tp := NewType(WithIsProvided[int](true), WithValue(1), WithTag[int]("test"))
+	err := NotEqualRule[int](2)(&tp)
+	assert.NoError(t, err)
 
-	t = NewType(false, 1.0, "test", B2Float64)
-	err = EqualRule[float64](2)(&t)
-	assert.NoError(s.T(), err)
+	err = NotEqualRule[int](0, 2, 3)(&tp)
+	assert.NoError(t, err)
 
-	t = NewType(true, 1.0, "test", B2Float64)
-	err = EqualRule[float64](0)(&t)
-	assert.ErrorContains(s.T(), err, "test: not equal [0]")
+	err = NotEqualRule[int](1)(&tp)
+	assert.ErrorContains(t, err, "test: equal [1]")
 
-	t = NewType(true, 1.0, "test", B2Float64)
-	err = EqualRule[float64](0, 2.0, 3.0)(&t)
-	assert.ErrorContains(s.T(), err, "test: not equal [0 2 3]")
+	err = NotEqualRule[int](0, 1, 2)(&tp)
+	assert.ErrorContains(t, err, "test: equal [0 1 2]")
 }
 
-func (s *TestEqualRuleSuite) TestString() {
-	t := NewType(true, "some", "test", B2S)
-	err := EqualRule[string]("some")(&t)
-	assert.NoError(s.T(), err)
+func TestNotEqualRule_Float64(t *testing.T) {
+	tp := NewType(WithIsProvided[float64](true), WithValue(1.0), WithTag[float64]("test"))
+	err := NotEqualRule[float64](2.0)(&tp)
+	assert.NoError(t, err)
 
-	t = NewType(true, "some", "test", B2S)
-	err = EqualRule[string]("some", "other")(&t)
-	assert.NoError(s.T(), err)
+	err = NotEqualRule[float64](0.5, 2.0)(&tp)
+	assert.NoError(t, err)
 
-	t = NewType(false, "some", "test", B2S)
-	err = EqualRule[string]("other")(&t)
-	assert.NoError(s.T(), err)
+	err = NotEqualRule[float64](1.0)(&tp)
+	assert.ErrorContains(t, err, "test: equal [1]")
 
-	t = NewType(true, "some", "test", B2S)
-	err = EqualRule[string]("different")(&t)
-	assert.ErrorContains(s.T(), err, "test: not equal [different]")
-
-	t = NewType(true, "some", "test", B2S)
-	err = EqualRule[string]("diff", "erent")(&t)
-	assert.ErrorContains(s.T(), err, "test: not equal [diff erent]")
+	err = NotEqualRule[float64](0.0, 1.0, 2.0)(&tp)
+	assert.ErrorContains(t, err, "test: equal [0 1 2]")
 }
 
-func (s *TestEqualRuleSuite) TestBool() {
-	t := NewType(true, true, "test", B2Bool)
-	err := EqualRule[bool](true)(&t)
-	assert.NoError(s.T(), err)
+func TestNotEqualRule_String(t *testing.T) {
+	tp := NewType(WithIsProvided[string](true), WithValue("some"), WithTag[string]("test"))
+	err := NotEqualRule[string]("other")(&tp)
+	assert.NoError(t, err)
 
-	t = NewType(true, false, "test", B2Bool)
-	err = EqualRule[bool](false, true)(&t)
-	assert.NoError(s.T(), err)
+	err = NotEqualRule[string]("diff", "erent")(&tp)
+	assert.NoError(t, err)
 
-	t = NewType(false, true, "test", B2Bool)
-	err = EqualRule[bool](false)(&t)
-	assert.NoError(s.T(), err)
+	err = NotEqualRule[string]("some")(&tp)
+	assert.ErrorContains(t, err, "test: equal [some]")
 
-	t = NewType(true, true, "test", B2Bool)
-	err = EqualRule[bool](false)(&t)
-	assert.ErrorContains(s.T(), err, "test: not equal [false]")
-
-	t = NewType(true, false, "test", B2Bool)
-	err = EqualRule[bool](true)(&t)
-	assert.ErrorContains(s.T(), err, "test: not equal [true]")
+	err = NotEqualRule[string]("any", "some", "thing")(&tp)
+	assert.ErrorContains(t, err, "test: equal [any some thing]")
 }
 
-func TestEqualRule(t *testing.T) {
-	suite.Run(t, &TestEqualRuleSuite{})
+func TestNotEqualRule_Bool(t *testing.T) {
+	tp := NewType(WithIsProvided[bool](true), WithValue(true), WithTag[bool]("test"))
+	err := NotEqualRule[bool](false)(&tp)
+	assert.NoError(t, err)
+
+	err = NotEqualRule[bool](true)(&tp)
+	assert.ErrorContains(t, err, "test: equal [true]")
+
+	tp = NewType(WithValue(false))
+	err = NotEqualRule[bool](true)(&tp)
+	assert.NoError(t, err)
+
+	tp = NewType(WithIsProvided[bool](true), WithValue(false), WithTag[bool]("test"))
+	err = NotEqualRule[bool](false)(&tp)
+	assert.ErrorContains(t, err, "test: equal [false]")
 }
 
-type TestNotEqualRuleSuite struct {
-	suite.Suite
+// TEST GTE
+
+func TestGTERule_Int(t *testing.T) {
+	tp := NewType(WithIsProvided[int](true), WithValue(5), WithTag[int]("test"))
+	err := GTERule[int](5)(&tp)
+	assert.NoError(t, err)
+
+	err = GTERule[int](4)(&tp)
+	assert.NoError(t, err)
+
+	tp = NewType(WithValue(3))
+	err = GTERule[int](5)(&tp)
+	assert.NoError(t, err)
+
+	tp = NewType(WithIsProvided[int](true), WithValue(3), WithTag[int]("test"))
+	err = GTERule[int](5)(&tp)
+	assert.ErrorContains(t, err, "test: not greater than or equal 5")
 }
 
-func (s *TestNotEqualRuleSuite) TestInt() {
-	t := NewType(true, 1, "test", B2I)
-	err := NotEqualRule[int](2)(&t)
-	assert.NoError(s.T(), err)
+func TestGTERule_Float64(t *testing.T) {
+	tp := NewType(WithIsProvided[float64](true), WithValue(5.0))
+	err := GTERule[float64](5.0)(&tp)
+	assert.NoError(t, err)
 
-	t = NewType(true, 1, "test", B2I)
-	err = NotEqualRule[int](0, 2, 3)(&t)
-	assert.NoError(s.T(), err)
+	err = GTERule[float64](4.9)(&tp)
+	assert.NoError(t, err)
 
-	t = NewType(true, 1, "test", B2I)
-	err = NotEqualRule[int](1)(&t)
-	assert.ErrorContains(s.T(), err, "test: equal [1]")
+	tp = NewType(WithIsProvided[float64](true), WithValue(3.0), WithTag[float64]("test"))
+	err = GTERule[float64](5.0)(&tp)
+	assert.ErrorContains(t, err, "test: not greater than or equal 5")
 
-	t = NewType(true, 1, "test", B2I)
-	err = NotEqualRule[int](0, 1, 2)(&t)
-	assert.ErrorContains(s.T(), err, "test: equal [0 1 2]")
+	tp = NewType(WithValue(3.0))
+	err = GTERule[float64](5.0)(&tp)
+	assert.NoError(t, err)
 }
 
-func (s *TestNotEqualRuleSuite) TestFloat64() {
-	t := NewType(true, 1.0, "test", B2Float64)
-	err := NotEqualRule[float64](2.0)(&t)
-	assert.NoError(s.T(), err)
+// TEST GT
 
-	t = NewType(true, 1.0, "test", B2Float64)
-	err = NotEqualRule[float64](0.5, 2.0)(&t)
-	assert.NoError(s.T(), err)
+func TestGTRule_Int(t *testing.T) {
+	tp := NewType(WithIsProvided[int](true), WithValue(6))
+	err := GTRule[int](5)(&tp)
+	assert.NoError(t, err)
 
-	t = NewType(true, 1.0, "test", B2Float64)
-	err = NotEqualRule[float64](1.0)(&t)
-	assert.ErrorContains(s.T(), err, "test: equal [1]")
+	tp = NewType(WithIsProvided[int](true), WithValue(5), WithTag[int]("test"))
+	err = GTRule[int](5)(&tp)
+	assert.ErrorContains(t, err, "test: not greater than 5")
 
-	t = NewType(true, 1.0, "test", B2Float64)
-	err = NotEqualRule[float64](0.0, 1.0, 2.0)(&t)
-	assert.ErrorContains(s.T(), err, "test: equal [0 1 2]")
+	tp = NewType(WithIsProvided[int](true), WithValue(4), WithTag[int]("test"))
+	err = GTRule[int](5)(&tp)
+	assert.ErrorContains(t, err, "test: not greater than 5")
+
+	tp = NewType(WithValue(3))
+	err = GTRule[int](5)(&tp)
+	assert.NoError(t, err)
 }
 
-func (s *TestNotEqualRuleSuite) TestString() {
-	t := NewType(true, "some", "test", B2S)
-	err := NotEqualRule[string]("other")(&t)
-	assert.NoError(s.T(), err)
+func TestGTRule_Float64(t *testing.T) {
+	tp := NewType(WithIsProvided[float64](true), WithValue(5.1))
+	err := GTRule[float64](5.0)(&tp)
+	assert.NoError(t, err)
 
-	t = NewType(true, "some", "test", B2S)
-	err = NotEqualRule[string]("diff", "erent")(&t)
-	assert.NoError(s.T(), err)
+	tp = NewType(WithIsProvided[float64](true), WithValue(5.0), WithTag[float64]("test"))
+	err = GTRule[float64](5.0)(&tp)
+	assert.ErrorContains(t, err, "test: not greater than 5")
 
-	t = NewType(true, "some", "test", B2S)
-	err = NotEqualRule[string]("some")(&t)
-	assert.ErrorContains(s.T(), err, "test: equal [some]")
+	tp = NewType(WithIsProvided[float64](true), WithValue(4.9), WithTag[float64]("test"))
+	err = GTRule[float64](5.0)(&tp)
+	assert.ErrorContains(t, err, "test: not greater than 5")
 
-	t = NewType(true, "some", "test", B2S)
-	err = NotEqualRule[string]("any", "some", "thing")(&t)
-	assert.ErrorContains(s.T(), err, "test: equal [any some thing]")
+	tp = NewType(WithValue(4.9))
+	err = GTRule[float64](5.0)(&tp)
+	assert.NoError(t, err)
 }
 
-func (s *TestNotEqualRuleSuite) TestBool() {
-	t := NewType(true, true, "test", B2Bool)
-	err := NotEqualRule[bool](false)(&t)
-	assert.NoError(s.T(), err)
+// TEST LTE
 
-	t = NewType(true, false, "test", B2Bool)
-	err = NotEqualRule[bool](true)(&t)
-	assert.NoError(s.T(), err)
+func TestLTERule_Int(t *testing.T) {
+	tp := NewType(WithIsProvided[int](true), WithValue(5))
+	err := LTERule[int](5)(&tp)
+	assert.NoError(t, err)
 
-	t = NewType(true, true, "test", B2Bool)
-	err = NotEqualRule[bool](true)(&t)
-	assert.ErrorContains(s.T(), err, "test: equal [true]")
+	err = LTERule[int](6)(&tp)
+	assert.NoError(t, err)
 
-	t = NewType(true, false, "test", B2Bool)
-	err = NotEqualRule[bool](false)(&t)
-	assert.ErrorContains(s.T(), err, "test: equal [false]")
+	tp = NewType(WithIsProvided[int](true), WithValue(7), WithTag[int]("test"))
+	err = LTERule[int](5)(&tp)
+	assert.ErrorContains(t, err, "test: not less than or equal 5")
+
+	tp = NewType(WithValue(6))
+	err = LTERule[int](5)(&tp)
+	assert.NoError(t, err)
 }
 
-func TestNotEqualRule(t *testing.T) {
-	suite.Run(t, &TestNotEqualRuleSuite{})
+func TestLTERule_Float64(t *testing.T) {
+	tp := NewType(WithIsProvided[float64](true), WithValue(5.0))
+	err := LTERule[float64](5.0)(&tp)
+	assert.NoError(t, err)
+
+	err = LTERule[float64](5.1)(&tp)
+	assert.NoError(t, err)
+
+	tp = NewType(WithIsProvided[float64](true), WithValue(5.2), WithTag[float64]("test"))
+	err = LTERule[float64](5.0)(&tp)
+	assert.ErrorContains(t, err, "test: not less than or equal 5")
+
+	tp = NewType(WithValue(5.2))
+	err = LTERule[float64](5.0)(&tp)
+	assert.NoError(t, err)
 }
 
-type TestGTERuleSuite struct {
-	suite.Suite
+// TEST LT
+
+func TestLTRule_Int(t *testing.T) {
+	tp := NewType(WithIsProvided[int](true), WithValue(4))
+	err := LTRule[int](5)(&tp)
+	assert.NoError(t, err)
+
+	tp = NewType(WithIsProvided[int](true), WithValue(5), WithTag[int]("test"))
+	err = LTRule[int](5)(&tp)
+	assert.ErrorContains(t, err, "test: not less than 5")
+
+	tp = NewType(WithIsProvided[int](true), WithValue(6), WithTag[int]("test"))
+	err = LTRule[int](5)(&tp)
+	assert.ErrorContains(t, err, "test: not less than 5")
+
+	tp = NewType(WithValue(5))
+	err = LTRule[int](5)(&tp)
+	assert.NoError(t, err)
 }
 
-func (s *TestGTERuleSuite) TestInt() {
-	t := NewType(true, 5, "test", B2I)
-	err := GTERule[int](5)(&t)
-	assert.NoError(s.T(), err)
+func TestLTRule_Float64(t *testing.T) {
+	tp := NewType(WithIsProvided[float64](true), WithValue(4.9))
+	err := LTRule[float64](5.0)(&tp)
+	assert.NoError(t, err)
 
-	err = GTERule[int](4)(&t)
-	assert.NoError(s.T(), err)
+	tp = NewType(WithIsProvided[float64](true), WithValue(5.0), WithTag[float64]("test"))
+	err = LTRule[float64](5.0)(&tp)
+	assert.ErrorContains(t, err, "test: not less than 5")
 
-	t = NewType(false, 5, "test", B2I)
-	err = GTERule[int](5)(&t)
-	assert.NoError(s.T(), err)
+	tp = NewType(WithIsProvided[float64](true), WithValue(5.1), WithTag[float64]("test"))
+	err = LTRule[float64](5.0)(&tp)
+	assert.ErrorContains(t, err, "test: not less than 5")
 
-	t = NewType(true, 3, "test", B2I)
-	err = GTERule[int](5)(&t)
-	assert.ErrorContains(s.T(), err, "test: not greater than or equal 5")
-}
-
-func (s *TestGTERuleSuite) TestFloat64() {
-	t := NewType(true, 5.0, "test", B2Float64)
-	err := GTERule[float64](5.0)(&t)
-	assert.NoError(s.T(), err)
-
-	err = GTERule[float64](4.9)(&t)
-	assert.NoError(s.T(), err)
-
-	t = NewType(false, 5.0, "test", B2Float64)
-	err = GTERule[float64](5.0)(&t)
-	assert.NoError(s.T(), err)
-
-	t = NewType(true, 3.0, "test", B2Float64)
-	err = GTERule[float64](5.0)(&t)
-	assert.ErrorContains(s.T(), err, "test: not greater than or equal 5")
-}
-
-func TestGTERule(t *testing.T) {
-	suite.Run(t, &TestGTERuleSuite{})
-}
-
-type TestGTRuleSuite struct {
-	suite.Suite
-}
-
-func (s *TestGTRuleSuite) TestInt() {
-	t := NewType(true, 6, "test", B2I)
-	err := GTRule[int](5)(&t)
-	assert.NoError(s.T(), err)
-
-	t = NewType(false, 6, "test", B2I)
-	err = GTRule[int](5)(&t)
-	assert.NoError(s.T(), err)
-
-	t = NewType(true, 5, "test", B2I)
-	err = GTRule[int](5)(&t)
-	assert.ErrorContains(s.T(), err, "test: not greater than 5")
-
-	t = NewType(true, 4, "test", B2I)
-	err = GTRule[int](5)(&t)
-	assert.ErrorContains(s.T(), err, "test: not greater than 5")
-}
-
-func (s *TestGTRuleSuite) TestFloat64() {
-	t := NewType(true, 5.1, "test", B2Float64)
-	err := GTRule[float64](5.0)(&t)
-	assert.NoError(s.T(), err)
-
-	t = NewType(false, 5.1, "test", B2Float64)
-	err = GTRule[float64](5.0)(&t)
-	assert.NoError(s.T(), err)
-
-	t = NewType(true, 5.0, "test", B2Float64)
-	err = GTRule[float64](5.0)(&t)
-	assert.ErrorContains(s.T(), err, "test: not greater than 5")
-
-	t = NewType(true, 4.9, "test", B2Float64)
-	err = GTRule[float64](5.0)(&t)
-	assert.ErrorContains(s.T(), err, "test: not greater than 5")
-}
-
-func TestGTRule(t *testing.T) {
-	suite.Run(t, &TestGTRuleSuite{})
-}
-
-type TestLTERuleSuite struct {
-	suite.Suite
-}
-
-func (s *TestLTERuleSuite) TestInt() {
-	t := NewType(true, 5, "test", B2I)
-	err := LTERule[int](5)(&t)
-	assert.NoError(s.T(), err)
-
-	err = LTERule[int](6)(&t)
-	assert.NoError(s.T(), err)
-
-	t = NewType(false, 5, "test", B2I)
-	err = LTERule[int](5)(&t)
-	assert.NoError(s.T(), err)
-
-	t = NewType(true, 7, "test", B2I)
-	err = LTERule[int](5)(&t)
-	assert.ErrorContains(s.T(), err, "test: not less than or equal 5")
-}
-
-func (s *TestLTERuleSuite) TestFloat64() {
-	t := NewType(true, 5.0, "test", B2Float64)
-	err := LTERule[float64](5.0)(&t)
-	assert.NoError(s.T(), err)
-
-	err = LTERule[float64](5.1)(&t)
-	assert.NoError(s.T(), err)
-
-	t = NewType(false, 5.0, "test", B2Float64)
-	err = LTERule[float64](5.0)(&t)
-	assert.NoError(s.T(), err)
-
-	t = NewType(true, 5.2, "test", B2Float64)
-	err = LTERule[float64](5.0)(&t)
-	assert.ErrorContains(s.T(), err, "test: not less than or equal 5")
-}
-
-func TestLTERule(t *testing.T) {
-	suite.Run(t, &TestLTERuleSuite{})
-}
-
-type TestLTRuleSuite struct {
-	suite.Suite
-}
-
-func (s *TestLTRuleSuite) TestInt() {
-	t := NewType(true, 4, "test", B2I)
-	err := LTRule[int](5)(&t)
-	assert.NoError(s.T(), err)
-
-	t = NewType(false, 4, "test", B2I)
-	err = LTRule[int](5)(&t)
-	assert.NoError(s.T(), err)
-
-	t = NewType(true, 5, "test", B2I)
-	err = LTRule[int](5)(&t)
-	assert.ErrorContains(s.T(), err, "test: not less than 5")
-
-	t = NewType(true, 6, "test", B2I)
-	err = LTRule[int](5)(&t)
-	assert.ErrorContains(s.T(), err, "test: not less than 5")
-}
-
-func (s *TestLTRuleSuite) TestFloat64() {
-	t := NewType(true, 4.9, "test", B2Float64)
-	err := LTRule[float64](5.0)(&t)
-	assert.NoError(s.T(), err)
-
-	t = NewType(false, 4.9, "test", B2Float64)
-	err = LTRule[float64](5.0)(&t)
-	assert.NoError(s.T(), err)
-
-	t = NewType(true, 5.0, "test", B2Float64)
-	err = LTRule[float64](5.0)(&t)
-	assert.ErrorContains(s.T(), err, "test: not less than 5")
-
-	t = NewType(true, 5.1, "test", B2Float64)
-	err = LTRule[float64](5.0)(&t)
-	assert.ErrorContains(s.T(), err, "test: not less than 5")
-}
-
-func TestLTRule(t *testing.T) {
-	suite.Run(t, &TestLTRuleSuite{})
+	tp = NewType(WithValue(5.1))
+	err = LTRule[float64](5.0)(&tp)
+	assert.NoError(t, err)
 }
