@@ -12,17 +12,12 @@ type Struct[T any] struct {
 
 type PrepareFN[T any] func() T
 
-func NewStruct[T any](isProvided bool, tag string, prepareFN PrepareFN[T]) Struct[T] {
-	return Struct[T]{
-		isProvided: isProvided,
-		tag:        tag,
-		prepareFN:  prepareFN,
-	}
-}
+func NewStruct[T any](options ...StructOption[T]) Struct[T] {
+	var s Struct[T]
 
-func NewStructWithRules[T any](isProvided bool, tag string, prepareFN PrepareFN[T], rules ...StructRule[T]) Struct[T] {
-	s := NewStruct(isProvided, tag, prepareFN)
-	s.rules = rules
+	for i := range options {
+		options[i](&s)
+	}
 
 	return s
 }

@@ -15,18 +15,12 @@ type Type[T any] struct {
 
 type TypeCastFn[T any] func(b []byte) (T, error)
 
-func NewType[T any](isProvided bool, value T, tag string, castFN TypeCastFn[T]) Type[T] {
-	return Type[T]{
-		isProvided: isProvided,
-		value:      value,
-		tag:        tag,
-		castFN:     castFN,
-	}
-}
+func NewType[T any](options ...TypeOption[T]) Type[T] {
+	var t Type[T]
 
-func NewTypeWithRules[T any](isProvided bool, value T, tag string, castFN TypeCastFn[T], rules ...TypeRule[T]) Type[T] {
-	t := NewType(isProvided, value, tag, castFN)
-	t.rules = rules
+	for i := range options {
+		options[i](&t)
+	}
 
 	return t
 }

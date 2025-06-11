@@ -27,9 +27,9 @@ func (s *TestStructUnmarshalSuite) TestBaseUnmarshal() {
 
 	inputData := []byte(`{"user": {"name": "test", "age": 20}}`)
 
-	expectData := Data{User: NewStruct[User](true, "", nil)}
-	expectData.User.value.Name = NewType(true, "test", "", nil)
-	expectData.User.value.Age = NewType(true, 20, "", nil)
+	expectData := Data{User: NewStruct[User](WithStructIsProvided[User](true))}
+	expectData.User.value.Name = NewType(WithIsProvided[string](true), WithValue("test"))
+	expectData.User.value.Age = NewType(WithIsProvided[int](true), WithValue(20))
 
 	var testData Data
 
@@ -50,19 +50,30 @@ func (s *TestStructUnmarshalSuite) TestUnmarshalWithPrepareFN() {
 
 	inputData := []byte(`{"user": {"name": "test", "age": 20}}`)
 
-	expectData := Data{User: NewStruct[User](true, "user", nil)}
-	expectData.User.value.Name = NewType(true, "test", "name", nil)
-	expectData.User.value.Age = NewType(true, 20, "age", nil)
+	expectData := Data{User: NewStruct[User](WithStructIsProvided[User](true), WithStructTag[User]("user"))}
+	expectData.User.value.Name = NewType(
+		WithIsProvided[string](true),
+		WithValue("test"),
+		WithTag[string]("name"),
+	)
+	expectData.User.value.Age = NewType(
+		WithIsProvided[int](true),
+		WithValue(20),
+		WithTag[int]("age"),
+	)
 
 	prepareFN := func() User {
 		return User{
-			Name: NewType(false, "test", "name", nil),
-			Age:  NewType(false, 20, "age", nil),
+			Name: NewType(WithValue("test"), WithTag[string]("name")),
+			Age:  NewType(WithValue(20), WithTag[int]("age")),
 		}
 	}
 
 	testData := Data{
-		User: NewStruct[User](false, "user", prepareFN),
+		User: NewStruct[User](
+			WithStructTag[User]("user"),
+			WithStructPrepareFN[User](prepareFN),
+		),
 	}
 
 	err := json.Unmarshal(inputData, &testData)

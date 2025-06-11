@@ -1,0 +1,3 @@
+.PHONY: run unit-tests
+test:
+	go test -race ./...

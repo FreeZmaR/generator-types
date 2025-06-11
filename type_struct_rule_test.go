@@ -15,11 +15,11 @@ func TestRequiredStructRule(t *testing.T) {
 
 	tt := map[string]testCase{
 		"Provided": {
-			input:       NewStruct[Data](true, "", nil),
+			input:       NewStruct[Data](WithStructIsProvided[Data](true)),
 			expectError: assert.NoError,
 		},
 		"NotProvided": {
-			input:       NewStruct[Data](false, "", nil),
+			input:       NewStruct[Data](),
 			expectError: assert.Error,
 		},
 	}

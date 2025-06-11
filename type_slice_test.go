@@ -41,12 +41,12 @@ func (s *TestSliceUnmarshalSuite) TestUnmarshalSliceStruct() {
 			isProvided: true,
 			value: []User{
 				{
-					Name: NewType(true, "a", "", nil),
-					Age:  NewType(true, 1, "", nil),
+					Name: NewType(WithIsProvided[string](true), WithValue("a")),
+					Age:  NewType(WithIsProvided[int](true), WithValue(1)),
 				},
 				{
-					Name: NewType(true, "b", "", nil),
-					Age:  NewType(true, 2, "", nil),
+					Name: NewType(WithIsProvided[string](true), WithValue("b")),
+					Age:  NewType(WithIsProvided[int](true), WithValue(2)),
 				},
 			},
 		}
@@ -82,12 +82,28 @@ func (s *TestSliceUnmarshalSuite) TestUnmarshalSliceStructWithPrepareFN() {
 			tag:        "test",
 			value: []User{
 				{
-					Name: NewType(true, "a", "name", nil),
-					Age:  NewType(true, 1, "age", nil),
+					Name: NewType(
+						WithIsProvided[string](true),
+						WithValue("a"),
+						WithTag[string]("name"),
+					),
+					Age: NewType(
+						WithIsProvided[int](true),
+						WithValue(1),
+						WithTag[int]("age"),
+					),
 				},
 				{
-					Name: NewType(true, "b", "name", nil),
-					Age:  NewType(true, 2, "age", nil),
+					Name: NewType(
+						WithIsProvided[string](true),
+						WithValue("b"),
+						WithTag[string]("name"),
+					),
+					Age: NewType(
+						WithIsProvided[int](true),
+						WithValue(2),
+						WithTag[int]("age"),
+					),
 				},
 			},
 		}
